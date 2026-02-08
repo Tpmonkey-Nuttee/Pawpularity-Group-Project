@@ -4,24 +4,20 @@ from torch import nn
 class NeuralNetwork(nn.Module):
     def __init__(self):
         super().__init__()
-        self.sigmoid = nn.Sigmoid()
-        self.flatten = nn.Flatten()
-        self.fc_h = nn.Linear(786432, 512)  # 512 x 512 x 3
-        self.fc_o = nn.Linear(512, 10)
-        self.fc_fuck = nn.Linear(10, 1)
-        self.relu = nn.ReLU()
-        # self.fc_stack = nn.Sequential(
-        #     nn.Linear(28*28, 512),
-        #     nn.ReLU(),
-        #     nn.Linear(512, 10)
-        #     nn.Softmax(10)
-        # )
+        self.cnn = nn.Conv2d(in_channels=3, out_channels=1, kernel_size=1)
+        self.fc_stack = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(512 * 512, 128),
+            nn.ReLU(),
+            nn.Linear(128, 64),
+            nn.ReLU(),
+            nn.Linear(64, 16),
+            nn.ReLU(),
+            nn.Linear(16, 1),
+            nn.ReLU(),
+            nn.Sigmoid(),
+        )
 
     def forward(self, x):
-        x = self.flatten(x)
-        # print(x.shape)
-        x = self.relu(self.fc_h(x))
-        x = self.relu(self.fc_o(x))
-        out = self.fc_fuck(x)
-        # out = self.fc_stack(x)
-        return self.sigmoid(out) * 100
+        x = self.cnn(x).squeeze()
+        return self.fc_stack(x)

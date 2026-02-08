@@ -13,7 +13,7 @@ def train(dataloader, model, loss_fn, optimizer):
     num_batches = len(dataloader)
     model.train()
     train_loss = 0
-    for batch, (X, y) in enumerate(dataloader):  # https://docs.python.org/3/library/functions.html#enumerate
+    for batch, (X, y) in enumerate(dataloader):
         X, y = X.to(device), y.to(device).float()
 
         # Compute prediction error
@@ -26,32 +26,28 @@ def train(dataloader, model, loss_fn, optimizer):
         optimizer.step()
 
         # Report
-        # correct += (pred - y).type(torch.float).sum().item()
         train_loss += loss.item()
 
-        if batch % 100 == 0:
+        if batch % 16 == 0:
             loss, current = loss.item(), batch * len(X)
             print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
 
-    # correct /= size
     train_loss /= num_batches
-    print(f"Train Error: \n Avg loss: {train_loss:>8f} \n")
+    print(f"Train Error: \n\tAvg loss: {train_loss:>8f} \n")
 
 
 def test(dataloader, model, loss_fn):
-    size = len(dataloader.dataset)
     num_batches = len(dataloader)
     model.eval()
-    test_loss, correct = 0, 0
+    test_loss = 0
     with torch.no_grad():
         for X, y in dataloader:
             X, y = X.to(device), y.to(device)
-            pred = model(X)
+            pred = model(X).squeeze()
             test_loss += loss_fn(pred, y).item()
-            correct += (pred.argmax(1) == y).type(torch.float).sum().item()
+
     test_loss /= num_batches
-    correct /= size
-    print(f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
+    print(f"Test Error: \n\tAvg loss: {test_loss*100:>8f}")
 
 
 batch_size = 64
@@ -63,7 +59,7 @@ mse = torch.nn.MSELoss()
 
 
 def loss_fn(y, y_hat):
-    return 100*torch.sqrt(mse(y, y_hat))
+    return torch.sqrt(mse(y, y_hat))
 
 
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)

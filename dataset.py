@@ -25,7 +25,7 @@ class ImageDataset(Dataset):
         image = self._convert(self._transform(image))
         if self._y is not None:
             label = self._y[idx]
-            return image, label
+            return image, label/100
         return image
 
 
