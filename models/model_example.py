@@ -1,5 +1,8 @@
 from torch import nn
 
+# Stupid example/baseline model.
+# Using RMSE, Test Error: 23.82
+
 
 class NeuralNetwork(nn.Module):
     def __init__(self):
