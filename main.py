@@ -1,8 +1,5 @@
 import torch
-from torch.utils.data import DataLoader
-
-from dataset import train_dataset, test_dataset
-from models.model_example import NeuralNetwork
+import config
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Using {device} device.")
@@ -50,24 +47,18 @@ def test(dataloader, model, loss_fn):
     print(f"Test Error: \n\tAvg loss: {test_loss*100:>8f}")
 
 
-batch_size = 64
-train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+batch_size = config.batch_size
+train_dataloader = config.train_dataloader
+test_dataloader = config.test_dataloader
 
-model = NeuralNetwork().to(device)
-mse = torch.nn.MSELoss()
+model = config.model().to(device)
+loss_fn = config.loss_fn
+optimizer = config.optimizer
 
-
-def loss_fn(y, y_hat):
-    return torch.sqrt(mse(y, y_hat))
-
-
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-
-epochs = 2
-
-
-for t in range(epochs):
+for t in range(config.epoch):
     print(f"Epoch {t+1}\n-------------------------------")
     train(train_dataloader, model, loss_fn, optimizer)
     test(test_dataloader, model, loss_fn)
+
+if config.save_after_finished_training:
+    torch.save(model.state_dict(), config.save_file_name)

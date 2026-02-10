@@ -29,8 +29,6 @@ class ImageDataset(Dataset):
         return image
 
 
-all_dataset = ImageDataset(
+_all_dataset = ImageDataset(
     pd.read_csv("./dataset/train.csv")
 )
-
-train_dataset, test_dataset = torch.utils.data.random_split(all_dataset, [0.8, 0.2])
