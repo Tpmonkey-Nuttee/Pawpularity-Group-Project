@@ -46,19 +46,48 @@ def test(dataloader, model, loss_fn):
     test_loss /= num_batches
     print(f"Test Error: \n\tAvg loss: {test_loss*100:>8f}")
 
+    return test_loss
+
 
 batch_size = config.batch_size
 train_dataloader = config.train_dataloader
 test_dataloader = config.test_dataloader
 
-model = config.model().to(device)
+model = config.model.to(device)
 loss_fn = config.loss_fn
 optimizer = config.optimizer
+
+# --- Early Stopping Setup ---
+best_val_loss = float('inf')
+patience = config.patience
+trigger_times = 0
 
 for t in range(config.epoch):
     print(f"Epoch {t+1}\n-------------------------------")
     train(train_dataloader, model, loss_fn, optimizer)
-    test(test_dataloader, model, loss_fn)
+#     test(test_dataloader, model, loss_fn)
 
-if config.save_after_finished_training:
-    torch.save(model.state_dict(), config.save_file_name)
+# if config.save_after_finished_training:
+#     torch.save(model.state_dict(), config.save_file_name)
+
+    # Capture the validation loss
+    current_val_loss = test(test_dataloader, model, loss_fn)
+
+    # --- Early Stopping Logic ---
+    if current_val_loss < best_val_loss:
+        print(f"--> Validation Loss Improved ({best_val_loss:.6f} -> {current_val_loss:.6f}). Saving model.")
+        best_val_loss = current_val_loss
+        trigger_times = 0
+        
+        # Save the model immediately when it improves
+        if config.save_after_finished_training:
+            torch.save(model.state_dict(), config.save_file_name)
+    else:
+        trigger_times += 1
+        print(f"--> No improvement. Patience: {trigger_times}/{patience}")
+        
+        if trigger_times >= patience:
+            print("Early stopping triggered! Training stopped.")
+            break
+
+print("Done!")
