@@ -6,8 +6,9 @@ import torch
 from torch.utils.data import DataLoader
 
 ######## Trainer Settings ########
-epoch = 4
+epoch = 50
 batch_size = 8
+patience = 5 # Stop if no improvement after n epochs
 save_after_finished_training = False
 save_file_name = "./models/model_example.pth"
 
